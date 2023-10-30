@@ -6,6 +6,10 @@
       <div v-else class="film-box__inner">
         <template v-if="!currentRandomFilm">
           <p>Фильмы загружены, пора сделать выбор!</p>
+          <div class="film-box__info">
+            <div>Фильмов в списке: <i>{{ filmList.length }}</i></div>
+            <div>Всего посмотрено: <i>{{ viewedFilmsLength }}</i></div>
+          </div>
           <button type="button" class="button" @click="getRandomFilm()">Погнали!</button>
         </template>
         <template v-else>
@@ -80,6 +84,12 @@ export default {
       filmName: '',
       filmPoster: '',
       addInProgress: false
+    }
+  },
+
+  computed: {
+    viewedFilmsLength() {
+      return this.filmList.filter(film => film.viewed).length
     }
   },
 
@@ -324,6 +334,16 @@ p {
   border: 2px dotted #fff;
   border-radius: 50%;
   animation: loading 1s infinite linear;
+}
+
+.film-box__info {
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.film-box__info i {
+  color: #ff124b;
+  font-weight: 600;
 }
 
 @keyframes loading {
