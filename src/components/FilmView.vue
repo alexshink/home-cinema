@@ -31,6 +31,7 @@
       <button type="button" class="button button_theme_secondary" @click="currentUser ? showAddModal = true : showAuthModal = true">Добавить фильм</button>
 
       <div class="modal" v-if="showAddModal">
+        <p class="modal__error" v-if="modalErrorMessage">{{ modalErrorMessage }}</p>
         <div class="modal__form" :class="{ 'modal__form_loading': addInProgress }">
           <input type="text" v-model="filmName" placeholder="Название фильма">
           <input type="text" v-model="filmPoster" placeholder="Ссылка на постер">
@@ -54,7 +55,7 @@
 <script>
 import { collection, getDocs, query, where, updateDoc, doc, addDoc } from 'firebase/firestore'
 import { db } from '../../firebase.js'
-import { getAuth, signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth"
 import { nextTick } from 'vue'
 
 export default {
@@ -83,7 +84,8 @@ export default {
       showAddModal: false,
       filmName: '',
       filmPoster: '',
-      addInProgress: false
+      addInProgress: false,
+      modalErrorMessage: ''
     }
   },
 
@@ -95,12 +97,19 @@ export default {
 
   methods: {
     async getRandomFilm() {
+      const prevFilmId = this.currentRandomFilm?.id
       const randomIndex = Math.floor(Math.random()*this.filmList.length)
-      this.currentRandomFilm = null
-      this.changeFilm = true
-      await nextTick()
-      this.changeFilm = false
-      this.currentRandomFilm = this.filmList[randomIndex]
+      const newRandomFilm = this.filmList[randomIndex]
+      
+      if ( prevFilmId === newRandomFilm.id ) {
+        this.getRandomFilm()
+      } else {
+        this.currentRandomFilm = null
+        this.changeFilm = true
+        await nextTick()
+        this.changeFilm = false
+        this.currentRandomFilm = newRandomFilm
+      }
     },
 
     async setAlreadyViewed() {
@@ -117,8 +126,15 @@ export default {
       }
     },
 
-    async addFilm() {
+    async addFilm() {      
       if ( !this.filmName ) {
+        this.modalErrorMessage = 'Название фильма обязательное'
+        return
+      }
+
+      const existingFilm = this.filmList.find(film => film.name === this.filmName)
+      if ( existingFilm ) {
+        this.modalErrorMessage = 'Фильм с таким названием уже в списке'
         return
       }
 
@@ -134,6 +150,8 @@ export default {
         await this.loadFilms()
 
         this.showAddModal = false
+        this.filmName = ''
+        this.filmPoster = ''
       } catch ( error ) {
         alert(error)
       } finally {
@@ -143,7 +161,7 @@ export default {
 
     signIn() {
       if ( !this.authEmail || !this.authPassword ) {
-        return
+        this.modalErrorMessage = 'Оба поля обязательны'
       }
 
       this.signInProgress = true
@@ -160,15 +178,6 @@ export default {
         })
     },
 
-    logOut() {
-      const auth = getAuth();
-      signOut(auth).then(() => {
-        window.location.reload()
-      }).catch((error) => {
-        console.log(error)
-      })
-    },
-
     checkAuth() {
       if ( !this.currentUser ) {
         this.showAuthModal = true
@@ -182,17 +191,28 @@ export default {
       this.loading = true
       try {
         const DB_QueryByAuthor = query(collection(db, 'films'), where('author', '==', this.author))
-        const queryResults = await getDocs(DB_QueryByAuthor);
+        const queryResults = await getDocs(DB_QueryByAuthor)
+        this.filmList = []
+
         queryResults.forEach((doc) => {
           const filmData = doc.data()
           filmData.id = doc.id
-          this.filmList.push(filmData);
+          this.filmList.push(filmData)
         })
       } catch ( error ) {
         console.log(error)
       } finally {
         this.loading = false
       }
+    }
+  },
+
+  watch: {
+    showAuthModal() {
+      this.modalErrorMessage = ''
+    },
+    showAddModal() {
+      this.modalErrorMessage = ''
     }
   },
 
@@ -270,10 +290,21 @@ p {
   position: fixed;
   inset: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   background: linear-gradient(45deg, #400b35, #744e4e);
   z-index: 99;
+}
+
+.modal__error {
+  margin-top: -40px;
+  margin-bottom: 40px;
+  height: 0;
+  color: #d11744;
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: .5px;
 }
 
 .modal__form {

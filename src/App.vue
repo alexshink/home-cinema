@@ -16,17 +16,15 @@
 
     <footer class="footer" v-if="currentUser">
       <div class="container">
-        <div class="user-email">{{ currentUser?.email }}</div>
+        <div class="user-email" @click="logOut">{{ currentUser?.email }}</div>
       </div>
     </footer>
   </div>
 </template>
 
 <script>
-  import FilmView from './components/FilmView.vue'
-// import { collection, getDocs, addDoc } from "firebase/firestore"; 
-// import { db } from '../firebase.js'
-import { getAuth, onAuthStateChanged } from "firebase/auth"
+import FilmView from './components/FilmView.vue'
+import { getAuth, onAuthStateChanged, signOut } from "firebase/auth"
 
 export default {
   name: 'App',
@@ -51,7 +49,16 @@ export default {
 
     goBack() {
       this.activeUserFilmList = null
-    }
+    },
+
+    logOut() {
+      const auth = getAuth();
+      signOut(auth).then(() => {
+        window.location.reload()
+      }).catch((error) => {
+        console.log(error)
+      })
+    },
   },
 
   async mounted() {
@@ -64,26 +71,6 @@ export default {
       this.authLoading = false
     })
   }
-
-  // async mounted() {
-  //   const querySnapshot = await getDocs(collection(db, "films"));
-  //   querySnapshot.forEach((doc) => {
-  //     console.log(doc.data());
-  //   })
-
-  //   try {
-  //     const docRef = await addDoc(collection(db, "films"), {
-  //       name: "Тест",
-  //       author: "Нэйт",
-  //       viewed: false,
-  //       poster: null
-  //     });
-
-  //     console.log("Document written with ID: ", docRef.id);
-  //   } catch (e) {
-  //     console.error("Error adding document: ", e);
-  //   }
-  // }
 }
 </script>
 
@@ -132,7 +119,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  transition: opacity .2s 3s;
+  transition: opacity .2s 1.5s;
 }
 
 .page__inner > *:not(:last-child) {
@@ -171,7 +158,7 @@ button {
   margin-bottom: 10px;
   user-select: none;
   -webkit-user-drag: none;
-  transition: transform 3s;
+  transition: transform 1.5s;
 }
 
 .footer {
