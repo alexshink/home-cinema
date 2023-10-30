@@ -9,7 +9,7 @@
           <button type="button" class="button" @click="getRandomFilm()">Погнали!</button>
         </template>
         <template v-else>
-          <div class="film-box__item" :class="{'film-box__item_viewed': currentRandomFilm.viewed}">
+          <div v-show="!changeFilm" class="film-box__item" :class="{'film-box__item_viewed': currentRandomFilm.viewed}">
             <h1 class="film-box__item-title">{{ currentRandomFilm.name }}</h1>
             <div class="film-box__item-poster">
               <img class="film-box__item-image" v-if="currentRandomFilm.poster" :src="currentRandomFilm.poster" alt="">
@@ -51,6 +51,7 @@
 import { collection, getDocs, query, where, updateDoc, doc, addDoc } from 'firebase/firestore'
 import { db } from '../../firebase.js'
 import { getAuth, signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { nextTick } from 'vue'
 
 export default {
   name: 'FilmView',
@@ -83,8 +84,12 @@ export default {
   },
 
   methods: {
-    getRandomFilm() {
+    async getRandomFilm() {
       const randomIndex = Math.floor(Math.random()*this.filmList.length)
+      this.currentRandomFilm = null
+      this.changeFilm = true
+      await nextTick()
+      this.changeFilm = false
       this.currentRandomFilm = this.filmList[randomIndex]
     },
 
