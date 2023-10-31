@@ -17,8 +17,8 @@
           <div v-show="!changeFilm" class="film-box__item" :class="{'film-box__item_viewed': currentRandomFilm.viewed}">
             <h1 class="film-box__item-title">{{ currentRandomFilm.name }}</h1>
             <div class="film-box__item-poster">
-              <img class="film-box__item-image" v-if="currentRandomFilm.poster" :src="currentRandomFilm.poster" alt="">
-              <div class="rada-photo" v-if="author === 'Нэйт'">
+              <img class="film-box__item-image" v-if="currentRandomFilm.poster" :src="currentRandomFilm.poster" alt="" @click="restartRadaPhoto()">
+              <div class="rada-photo" v-if="author === 'Нэйт' && showRadaPhoto">
                 <img v-if="randomRadaPhotoName" :src="require(`./../assets/rada/${randomRadaPhotoName}`)" alt="">
               </div>
             </div>
@@ -91,7 +91,8 @@ export default {
       addInProgress: false,
       modalErrorMessage: '',
       radaPhotosNames: [],
-      randomRadaPhotoName: null
+      randomRadaPhotoName: null,
+      showRadaPhoto: true
     }
   },
 
@@ -225,6 +226,12 @@ export default {
     getRandomRadaPhoto() {
       const randomIndex = Math.floor(Math.random()*this.radaPhotosNames.length)
       this.randomRadaPhotoName = this.radaPhotosNames[randomIndex].replace('./', '')
+    },
+
+    async restartRadaPhoto() {
+      this.showRadaPhoto = false
+      await nextTick()
+      this.showRadaPhoto = true
     }
   },
 
