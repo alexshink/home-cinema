@@ -12,11 +12,15 @@
           </div>
           <button type="button" class="button" @click="getRandomFilm()">Погнали!</button>
         </template>
+
         <template v-else>
           <div v-show="!changeFilm" class="film-box__item" :class="{'film-box__item_viewed': currentRandomFilm.viewed}">
             <h1 class="film-box__item-title">{{ currentRandomFilm.name }}</h1>
             <div class="film-box__item-poster">
               <img class="film-box__item-image" v-if="currentRandomFilm.poster" :src="currentRandomFilm.poster" alt="">
+              <div class="rada-photo" v-if="author === 'Нэйт'">
+                <img v-if="randomRadaPhotoName" :src="require(`./../assets/rada/${randomRadaPhotoName}`)" alt="">
+              </div>
             </div>
           </div>
 
@@ -85,7 +89,9 @@ export default {
       filmName: '',
       filmPoster: '',
       addInProgress: false,
-      modalErrorMessage: ''
+      modalErrorMessage: '',
+      radaPhotosNames: [],
+      randomRadaPhotoName: null
     }
   },
 
@@ -109,6 +115,7 @@ export default {
         await nextTick()
         this.changeFilm = false
         this.currentRandomFilm = newRandomFilm
+        this.getRandomRadaPhoto()
       }
     },
 
@@ -204,6 +211,20 @@ export default {
       } finally {
         this.loading = false
       }
+    },
+
+    getAllRadaPhotos() {
+      const photos = require.context(
+        '@/assets/rada',
+        false,
+        /^.*\.*$/
+      )
+      this.radaPhotosNames = photos.keys()
+    },
+
+    getRandomRadaPhoto() {
+      const randomIndex = Math.floor(Math.random()*this.radaPhotosNames.length)
+      this.randomRadaPhotoName = this.radaPhotosNames[randomIndex].replace('./', '')
     }
   },
 
@@ -217,6 +238,7 @@ export default {
   },
 
   mounted() {
+    this.getAllRadaPhotos()
     this.loadFilms()
   }
 }
@@ -274,9 +296,11 @@ p {
 }
 
 .film-box__item-poster {
+  position: relative;
   width: 300px;
   height: 380px;
   margin: 10px auto 20px;
+  overflow: hidden;
 }
 
 .film-box__item-image {
@@ -377,9 +401,42 @@ p {
   font-weight: 600;
 }
 
+.rada-photo {
+  width: 100%;
+  height: 300px;
+  position: absolute;
+  bottom: -300px;
+  left: 0;
+  animation-duration: 2s;
+  animation-delay: 1s;
+  animation-iteration-count: 2;
+  animation-name: radaPhoto;
+  animation-timing-function: ease-in-out;
+  animation-direction: alternate;
+}
+
+.rada-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
 @keyframes loading {
   100% {
     transform: rotate(90deg);
+  }
+}
+
+@keyframes radaPhoto {
+  0% {
+    bottom: -300px;
+  }
+  90% {
+    bottom: 0;
+  }
+  100% {
+    bottom: 0;
   }
 }
 </style>
