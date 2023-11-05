@@ -14,6 +14,7 @@
         </template>
 
         <template v-else>
+          <input type="text" placeholder="Найти фильм" v-model="searchTerm" class="input-search">
           <div v-show="!changeFilm" class="film-box__item" :class="{'film-box__item_viewed': currentRandomFilm.viewed}">
             <h1 class="film-box__item-title">{{ currentRandomFilm.name }}</h1>
             <div class="film-box__item-poster">
@@ -92,7 +93,9 @@ export default {
       modalErrorMessage: '',
       radaPhotosNames: [],
       randomRadaPhotoName: null,
-      showRadaPhoto: true
+      showRadaPhoto: true,
+      prevFilm: null,
+      searchTerm: ''
     }
   },
 
@@ -116,6 +119,7 @@ export default {
         await nextTick()
         this.changeFilm = false
         this.currentRandomFilm = newRandomFilm
+        this.prevFilm = this.currentRandomFilm
         this.getRandomRadaPhoto()
       }
     },
@@ -241,6 +245,17 @@ export default {
     },
     showAddModal() {
       this.modalErrorMessage = ''
+    },
+    searchTerm(searchValue) {
+      if ( !searchValue ) {
+        this.currentRandomFilm = this.prevFilm
+      } else {
+        const lowerCaseTerm = searchValue.toLowerCase()
+        const findFilm = this.filmList.find(film => film.name.toLowerCase().includes(lowerCaseTerm))
+        if ( findFilm ) {
+          this.currentRandomFilm = findFilm
+        }
+      }
     }
   },
 
@@ -427,6 +442,21 @@ p {
   height: 100%;
   object-fit: cover;
   object-position: center;
+}
+
+.input-search {
+  display: block;
+  width: 100%;
+  margin: -12px auto 10px;
+  color: #d11744;
+  box-shadow: 0 0 5px 0px #d11744;
+  border-radius: 4px;
+  padding: 5px 7px;
+  outline: none;
+}
+
+::placeholder {
+  color: #9c1737;
 }
 
 @keyframes loading {
