@@ -16,7 +16,7 @@
 
     <footer class="footer" v-if="currentUser">
       <div class="container">
-        <div class="user-email" @click="logOut">{{ currentUser?.email }}</div>
+        <button class="user-email" @click="logOut" title="Выйти">{{ currentUser?.email }}</button>
       </div>
     </footer>
   </div>
@@ -162,10 +162,14 @@ button {
 }
 
 .footer {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  padding-bottom: 10px;
+  padding: 10px 0;
+}
+
+.user-email {
   font-size: 10px;
+}
+
+.user-email:hover {
+  text-decoration: underline;
 }
 </style>

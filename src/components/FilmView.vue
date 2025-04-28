@@ -3,6 +3,18 @@
     <div class="film-box" v-if="!loading">
       <p v-if="!filmList.length">Дэээмн, в этом списке пока нет фильмов, го добавлять!</p>
 
+      <div v-else-if="filmsAsList" class="film-list">
+        <a v-for="film of filmList"
+           :key="film.id"
+           :href="'https://www.google.com/search?q=' + film.name + ' кинопоиск'"
+           target="_blank"
+           class="film-list__item"
+           :class="{ 'film-list__item_viewed': film.viewed }
+        ">
+          {{ film.name }}
+        </a>
+      </div>
+
       <div v-else class="film-box__inner">
         <template v-if="!currentRandomFilm">
           <p>Фильмы загружены, пора сделать выбор!</p>
@@ -10,7 +22,7 @@
             <div>Фильмов в списке: <i>{{ filmList.length }}</i></div>
             <div>Всего посмотрено: <i>{{ viewedFilmsLength }}</i></div>
           </div>
-          <button type="button" class="button" @click="getRandomFilm()">Погнали!</button>
+          <button type="button" class="button" @click="getRandomFilm()">Случайный</button>
         </template>
 
         <template v-else>
@@ -55,6 +67,9 @@
       </div>
     </div>
   </div>
+  
+  <button v-if="!filmsAsList" type="button" class="button button_theme_secondary" @click="filmsAsList = true">Весь список</button>
+
 </template>
 
 <script>
@@ -95,7 +110,8 @@ export default {
       randomRadaPhotoName: null,
       showRadaPhoto: true,
       prevFilm: null,
-      searchTerm: ''
+      searchTerm: '',
+      filmsAsList: false
     }
   },
 
@@ -453,6 +469,22 @@ p {
   border-radius: 4px;
   padding: 5px 7px;
   outline: none;
+}
+
+.film-list {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.film-list__item {
+  margin-bottom: 10px;
+  margin-right: 12px;
+  text-decoration: underline;
+  text-align: left;
+}
+
+.film-list__item_viewed {
+  color: green;
 }
 
 ::placeholder {
